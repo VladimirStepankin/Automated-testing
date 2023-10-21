@@ -1,34 +1,72 @@
 from checkers import checkout, getout
+import yaml
 
-folder_in = "/home/artanetz/tst"
-folder_out = "/home/artanetz/folder_out"
-folder_ext = "/home/artanetz/folder1"
-
-
-def test_step1():
-    # test1
-    assert checkout(f"cd {folder_in}; 7z a {folder_out}/arch1", "Everything is Ok"), "test1 FAIL"
+with open('config.yaml') as f:
+    data = yaml.safe_load(f)
 
 
-def test_step2():
-    # test2
-    assert checkout(f"cd {folder_out}; 7z d ./arch1.7z file1.txt", "Everything is Ok"), "test2 FAIL"
+class TestPositive:
+    def test_step1(self, make_folders, clear_folders, make_files):
+        # test1
+        res = []
+        res.append(checkout(f"cd {data['folder_in']}; 7z a {data['folder_out']}/arch1 -t{data['type']}",
+                            "Everything is Ok"))
+        res.append(checkout(f"ls {data['folder_out']}", f"arch1.{data['type']}"))
+        assert all(res), "test1 FAIL"
 
+    def test_step2(self, clear_folders, make_files):
+        # test2
+        res = []
+        res.append(checkout(f"cd {data['folder_in']}; 7z a {data['folder_out']}/arch1 -t{data['type']}",
+                            "Everything is Ok"))
+        res.append(checkout(f"cd {data['folder_out']}; 7z e arch1.{data['type']} -o{data['folder_ext']} -y",
+                            "Everything is Ok"))
 
-def test_step3():
-    # test3
-    assert checkout(f"cd {folder_out}; 7z l arch1.7z", "file2.txt"), "test3 FAIL"
+        for item in make_files:
+            res.append(checkout(f"ls {data['folder_ext']}", item))
+        assert all(res), "test2 FAIL"
 
+    def test_step3(self):
+        # test3
+        assert checkout(f"cd {data['folder_out']}; 7z t arch1.{data['type']}",
+                        "Everything is Ok"), "test3 FAIL"
 
-def test_step4():
-    # test4
-    assert checkout(f"cd {folder_out}; 7z x arch1.7z -o{folder_ext} -y", "Everything is Ok"), "test4 FAIL"
-    assert checkout(f"ls {folder_ext}", "file2.txt"), "test4 FAIL"
+    def test_step4(self):
+        # test4
+        assert checkout(f"cd {data['folder_out']}; 7z u arch1.{data['type']}",
+                        "Everything is Ok"), "test4 FAIL"
 
+    def test_step5(self, clear_folders, make_files):
+        # test5
+        res = []
+        res.append(checkout(f"cd {data['folder_in']}; 7z a {data['folder_out']}/arch1 -t{data['type']}",
+                            "Everything is Ok"))
+        for item in make_files:
+            res.append(checkout(f"cd {data['folder_out']}; 7z l arch1.{data['type']}", item))
+        assert all(res), "test5 FAIL"
 
-def test_step5():
-    # test5
-    res1 = checkout(f"cd {folder_in}; 7z h file1.txt", "")
-    crc32_hash = getout(f"cd {folder_in}; crc32 test1.txt").upper()
-    res2 = checkout(f"cd {folder_in}; 7z h file1.txt", crc32_hash)
-    assert res1 and res2, "test5 FAIL"
+    def test_step6(self, clear_folders, make_files, make_subfolder):
+        res = []
+        res.append(checkout(f"cd {data['folder_in']}; 7z a {data['folder_out']}/arch1 -t{data['type']}",
+                            "Everything is Ok"))
+        res.append(checkout(f"cd {data['folder_out']}; 7z x arch1.{data['type']} -o{data['folder_ext2']} -y",
+                            "Everything is Ok"))
+        for item in make_files:
+            res.append(checkout(f"ls {data['folder_ext2']}", item))
+        res.append(checkout(f"ls {data['folder_ext2']}", make_subfolder[0]))
+        res.append(checkout(f"ls {data['folder_ext2']}/{make_subfolder[0]}", make_subfolder[1]))
+        assert all(res), "test6 FAIL"
+
+    def test_step7(self):
+        # test7
+        assert checkout(f"cd {data['folder_out']}; 7z d arch1.{data['type']}",
+                        "Everything is Ok"), "test7 FAIL"
+
+    def test_step8(self, clear_folders, make_files):
+        # test8
+        res = []
+        for item in make_files:
+            res.append(checkout(f"cd {data['folder_in']}; 7z h {item}", "Everything is Ok"))
+            hash = getout(f"cd {data['folder_in']}; crc32 {item}").upper()
+            res.append(checkout(f"cd {data['folder_in']}; 7z h {item}", hash))
+        assert all(res), "test8 FAIL"

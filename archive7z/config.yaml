@@ -1,0 +1,7 @@
+folder_in: /home/artanetz/folder_in
+folder_out: /home/artanetz/folder_out
+folder_ext: /home/artanetz/folder_ext
+folder_ext2: /home/artanetz/folder_ext2
+count: 5
+bs: 1M
+type: zip
