@@ -1,7 +1,11 @@
-folder_in: /home/artanetz/folder_in
-folder_out: /home/artanetz/folder_out
-folder_ext: /home/artanetz/folder_ext
-folder_ext2: /home/artanetz/folder_ext2
+folder_in: /home/user2/folder_in
+folder_out: /home/user2/folder_out
+folder_ext: /home/user2/folder_ext
+folder_ext2: /home/user2/folder_ext2
 count: 5
 bs: 1M
 type: zip
+ip: 0.0.0.0
+user: user2
+passwd: "11"
+pkgname: p7zip-full
